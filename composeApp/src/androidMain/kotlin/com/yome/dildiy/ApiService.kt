@@ -19,7 +19,7 @@ interface ApiService {
 
 object NetworkClient {
 
-    private val okHttpClient = OkHttpClient.Builder()
+    private val okHttpClient =  OkHttpClient.Builder()
         .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
         .build()
 

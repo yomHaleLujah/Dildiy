@@ -5,8 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.R
-import androidx.compose.runtime.getValue
+-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -16,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.vipulasri.jetdelivery.components.AppTopBar
 import com.vipulasri.jetdelivery.components.ShowError
 import com.vipulasri.jetdelivery.components.ShowLoading
+import com.vipulasri.jetdelivery.data.Result
 import com.vipulasri.jetdelivery.ui.dashboard.ShowDashboard
 
 class MainActivity : ComponentActivity() {
