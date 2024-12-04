@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+//    alias(libs.plugins.kotlin.serialization)
+    kotlin("plugin.serialization") version "1.8.0" // Same version as Kotlin
 }
 
 kotlin {
@@ -35,7 +37,7 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
     }
     
@@ -57,44 +59,61 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)
             implementation(compose.material3)
+            implementation("io.ktor:ktor-client-android:2.3.1") // Android Ktor engine
 
-            implementation("androidx.core:core-ktx:1.10.0")  // Updated
-//            implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")  // Updated
-//            implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")  // Updated
-            implementation("androidx.activity:activity-compose:1.7.0")  // Updated
-            implementation("androidx.appcompat:appcompat:1.6.1")  // Updated
-            implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")  // Updated
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")  // Updated
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7")  // Updated
-//            implementation("com.squareup.okhttp3:okhttp:4.10.0")  // Updated
-            implementation("com.squareup.retrofit2:retrofit:2.9.0")  // Updated
-            implementation("com.github.shyiko:ktlint:0.48.0")  // Updated
-            implementation("io.coil-kt:coil-compose:2.3.0")  // Updated
-            implementation ("com.squareup.moshi:moshi-kotlin:1.15.0")
+            implementation("io.insert-koin:koin-core:3.4.0")
+            implementation("io.insert-koin:koin-android:3.4.0") // For Android
+            implementation("io.insert-koin:koin-androidx-compose:3.4.0") // For Jetpack Compose
 
-            //Live Data       // View Model
-            implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.5.0")
-            implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0")
+            // Ktor Core dependency for shared code
+            implementation("io.ktor:ktor-client-core:2.3.1")
+            
+            // Ktor serialization and JSON support
+//            implementation("io.ktor:ktor-client-serialization:2.3.1")
+//            {
+//                exclude(group = "io.ktor", module = "ktor-client-android") // Exclude Android engine
+//            }
+            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.1")
 
+            // Kotlin Coroutines Core - For general coroutine functionality
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2")
 
+            // Kotlin Coroutines for Android (allows using coroutines in UI thread)
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2")
+            // Ktor Content Negotiation Plugin
+            implementation("io.ktor:ktor-client-content-negotiation:2.3.1")
 
-            //okHttp
-            implementation ("com.squareup.okhttp3:okhttp:4.3.1")
-            implementation ("com.squareup.okhttp3:logging-interceptor:4.3.1")
+            // Optional Ktor Authentication and Logging Plugins
+            implementation("io.ktor:ktor-client-auth:2.3.1")
 
-            //retrofit
-            implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-            implementation ("com.squareup.retrofit2:converter-moshi:2.9.0")
+            implementation("io.ktor:ktor-client-logging:2.3.1")
 
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
+            // Kotlinx Serialization for JSON parsing
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+            implementation("io.ktor:ktor-client-okhttp:2.0.0")
+
+            implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")  // Add this line
+
+            implementation ("androidx.navigation:navigation-compose:2.4.0-alpha01")
+
+            implementation ("androidx.compose.material:material-icons-extended:1.5.0")  // For extended icons
+
+            implementation ("androidx.datastore:datastore-preferences:1.0.0")
+
+            // Room dependencies
+            implementation ("androidx.room:room-runtime:2.5.0")
+//            kapt ("androidx.room:room-compiler:2.5.0")
+            implementation ("androidx.room:room-ktx:2.5.0")
+            implementation("com.airbnb.android:lottie-compose:6.1.0")
+            implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+            implementation ("org.osmdroid:osmdroid-android:6.1.14")
+//            implementation ("com.github.YohannesTz:ChapaKt:1.0.0")
+            implementation ("androidx.webkit:webkit:1.8.0")
 
         }
     }
@@ -122,12 +141,33 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
 dependencies {
+    implementation(libs.androidx.ui.android)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.navigation.runtime.ktx)
+    implementation(libs.androidx.navigation.compose)
+
+    implementation ("io.coil-kt:coil-compose:2.4.0")
+    implementation(libs.androidx.foundation.layout.android)  // Coil for image loading
+    implementation ("com.google.accompanist:accompanist-pager:0.24.13-rc")
+    // Ensure you have the correct version
+    implementation ("com.google.android.exoplayer:exoplayer:2.18.0")
+
+    // Android-specific dependencies for Ktor and Koin
+    implementation("io.ktor:ktor-client-android:2.3.1") // Android Ktor engine
+    implementation(libs.androidx.lifecycle.viewmodel.android)
+    implementation(libs.androidx.core)
+    implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.play.services.location)
+//    implementation(libs.constraintlayout) // Koin Android support
+
+
     debugImplementation(compose.uiTooling)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 }
 

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">dildiy</string>
+    <string name="fileprovider">com.yom.dildiy.fileprovider</string>
+
 </resources>
