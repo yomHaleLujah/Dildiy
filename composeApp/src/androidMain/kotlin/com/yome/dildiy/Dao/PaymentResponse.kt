@@ -16,14 +16,14 @@ data class PaymentData(
     val email: String? = null,      // Nullable string
     val phone_number: String? = null, // Nullable string
     val currency: String,
-    val amount: Int,
+    val amount: Double,
     val charge: Double,
     val mode: String,
     val method: String,
     val type: String,
     val status: String,
     val reference: String,
-    val tx_ref: String,
+    val txRef: String,
     val customization: Customization,
     val meta: String? = null,
     val created_at: String,

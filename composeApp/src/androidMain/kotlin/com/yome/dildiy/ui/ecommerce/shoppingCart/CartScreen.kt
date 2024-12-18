@@ -1,11 +1,9 @@
-package com.yome.dildiy.shoppingCart
+package com.yome.dildiy.ui.ecommerce.shoppingCart
 
-import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,12 +19,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.ArrowCircleRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,8 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.airbnb.lottie.compose.LottieAnimation
@@ -50,12 +43,9 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.yome.dildiy.R
 
 import com.yome.dildiy.networking.CartItemDTO
-import com.yome.dildiy.ui.ecommerce.checkout.CheckoutScreen
-import com.yome.dildiy.ui.ecommerce.profile.TopBar
 import com.yome.dildiy.util.BaseUris
 import com.yome.dildiy.util.PreferencesHelper
 import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.NonDisposableHandle.parent
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.mp.KoinPlatform.getKoin
@@ -269,7 +259,7 @@ fun CartScreen(
                                     cartItem.quantity = updatedQuantity
                                 },
                                 onRemoveItem = {
-                                    removeCartItemLocally(cartItem.id)
+                                    cartItem.id?.let { removeCartItemLocally(it) }
                                     printSelectedItems(checkout!!)
                                     refreshPage()  // Trigger full screen refresh
                                     cartItemsState.value = cartItemsState.value.filter { it.id != cartItem.id }

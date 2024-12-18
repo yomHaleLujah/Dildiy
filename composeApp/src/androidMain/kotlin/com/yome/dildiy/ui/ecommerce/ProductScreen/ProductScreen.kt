@@ -1,4 +1,5 @@
 package com.yome.dildiy.ui.ecommerce.ProductScreen
+import androidx.compose.animation.animateContentSize
 import com.google.accompanist.pager.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,17 +8,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowCircleRight
+import androidx.compose.material.icons.filled.ArrowRightAlt
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -34,7 +48,6 @@ import org.koin.mp.KoinPlatform.getKoin
 @Composable
 fun ProductHomeScreen(
     viewModel: ProductViewModel = getKoin().get(),
-//    client: DildiyClient,
     navController: NavController
 ) {
     val productScreenState by viewModel.productViewState.collectAsState()
@@ -58,7 +71,6 @@ fun ProductHomeScreen(
                 }
 
                 is ProductViewModel.ProductScreenState.Success -> {
-                    println("show listt ")
                     // Show the list of products in a vertical pager
                     val products =
                         (productScreenState as ProductViewModel.ProductScreenState.Success).responseData
@@ -74,8 +86,6 @@ fun ProductHomeScreen(
                     // Show error message
                     Text(
                         text = "Error:EcommerceViewModel.ProductState.Error",
-//                        modifier =
-//                        Modifier.align(Alignment.Center)
                     )
                 }
             }
@@ -106,10 +116,8 @@ fun ProductCard(product: Product, navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.LightGray) // Set a contrasting background color
 
     ) {
-        // Full-screen image
         Image(
             painter = rememberImagePainter(IMAGE_BASE_URL + product.image), // Replace with your drawable resource
             contentDescription = null,
@@ -123,26 +131,24 @@ fun ProductCard(product: Product, navController: NavController) {
 
         Column(
             modifier = Modifier.fillMaxWidth()
-
-//                .fillMaxSize()
                 .padding (horizontal = 16.dp)
                 .align(Alignment.BottomStart)// Optional padding for the entire screen
         ) {
-            // Product Name (Username)
-            Text(
-                text = product.name ?: "Unknown User", // Replace with the actual username
-                fontSize = 20.sp, // Adjust font size to make it more readable
-                fontWeight = FontWeight.Bold, // Make it bold for emphasis
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 8.dp)
+
+            TextWithBorder(
+                text = product.name ?: "Unknown User",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                textColor = Color.Black,
+                borderColor = Color.White,
+                borderWidth = 6f // Adjust for thicker or thinner borders
             )
-            // Product Description
-            Text(
-                text = product.description, // Product description
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 16.dp) // Padding below description text
+
+            val (expanded, onExpandedChange) = rememberSaveable { mutableStateOf(false) }
+            ExpandingText(
+                text = product.description
             )
+
 
             Row(
                 modifier = Modifier
@@ -154,7 +160,8 @@ fun ProductCard(product: Product, navController: NavController) {
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black.copy(alpha = 0.7f)),  // Correct color parameter for Material3
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(start = 0.dp)
+                        .padding( 8.dp)
                         .height(50.dp)
                 ) {
                     Text(
@@ -177,9 +184,15 @@ fun ProductCard(product: Product, navController: NavController) {
                         .height(50.dp)
                 ) {
                     Text(
-                        text = "Shop Now >",
+                        text = "Shop Now   ",
                         color = Color.White, // White text color
                         style = MaterialTheme.typography.bodyLarge
+                    )
+                    androidx.compose.material.Icon(
+                        imageVector = Icons.Default.ArrowRightAlt,
+                        contentDescription = "Map Icon",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -194,42 +207,65 @@ fun ProductCard(product: Product, navController: NavController) {
 
 
 @Composable
-fun ProductDetailsScreen(
-    product: Product, // Assume you pass a product object with username and description
-    onShopNowClicked: () -> Unit,
+fun TextWithBorder(
+    text: String,
+    fontSize: TextUnit = 20.sp,
+    fontWeight: FontWeight = FontWeight.Bold,
+    textColor: Color = Color.White,
+    borderColor: Color = Color.Black,
+    borderWidth: Float = 4f // Thickness of the border
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp) // Optional padding for the entire screen
-    ) {
-        // Product Name (Username)
-        Text(
-            text = "${product.name}", // Replace with actual username
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(bottom = 8.dp) // Padding below username text
-        )
-
-        // Product Description
-        Text(
-            text = product.description, // Product description
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(bottom = 16.dp) // Padding below description text
-        )
-
-
-        Button(
-            onClick = onShopNowClicked,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RectangleShape
-        ) {
-            Text(
-                text = "Shop Now >",
-                color = Color.White, // White text color
-                style = MaterialTheme.typography.bodyLarge
+    Text(
+        text = text,
+        fontSize = fontSize,
+        fontWeight = fontWeight,
+        color = textColor,
+        style = TextStyle(
+            shadow = Shadow(
+                color = borderColor,
+                offset = Offset(0f, 0f), // Centered shadow
+                blurRadius = borderWidth // Adjust border thickness
             )
+        )
+    )
+}
+
+private const val MINIMIZED_MAX_LINES = 2
+
+@Composable
+fun ExpandingText(
+    modifier: Modifier = Modifier,
+    text: String,
+    expandedMaxLines: Int = Int.MAX_VALUE,
+    minimizedMaxLines: Int = MINIMIZED_MAX_LINES,
+) {
+    var isExpanded by remember { mutableStateOf(false) } // Track expanded/collapsed state
+    var isTextTruncated by remember { mutableStateOf(false) } // Track if text is truncated
+
+    // Text widget for displaying the content
+    Text(
+        text = text,
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyLarge,
+        maxLines = if (isExpanded) expandedMaxLines else minimizedMaxLines,
+        overflow = TextOverflow.Ellipsis,
+        onTextLayout = { textLayoutResult ->
+            // Check if the text is overflowing (truncated)
+            isTextTruncated = textLayoutResult.hasVisualOverflow
         }
+    )
+
+    // Show Read More or Read Less based on the truncation and expanded state
+    if (isTextTruncated || isExpanded) {
+        Text(
+            text = if (isExpanded) "Read Less" else "Read More", // Toggle between Read More and Read Less
+            color = Color.Blue,
+            modifier = Modifier
+                .clickable {
+                    // Toggle the expanded/collapsed state
+                    isExpanded = !isExpanded
+                }
+                .padding(top = 4.dp) // Optional padding between the text and button
+        )
     }
 }

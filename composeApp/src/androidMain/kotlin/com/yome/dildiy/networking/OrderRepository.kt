@@ -2,6 +2,7 @@ package com.yome.dildiy.networking
 
 import android.content.Context
 import com.yome.dildiy.model.Orders
+import com.yome.dildiy.util.PreferencesHelper
 import com.yome.dildiy.util.PreferencesHelper.getJwtToken
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -11,8 +12,10 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.utils.EmptyContent.headers
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLProtocol
+import io.ktor.http.contentType
 import io.ktor.http.headers
 import io.ktor.http.path
 import kotlinx.coroutines.flow.Flow
@@ -24,18 +27,23 @@ class OrderRepository(private val httpClient: HttpClient) {
     // Place an order
     suspend fun placeOrder(order: Orders, context: Context): Flow<NetWorkResult<Orders>> {
         return toResultFlow {
-            println("Placing order: $order")
+            val orderWithNullIds = order.copy(
+                id = null,  // Set the order ID to null
+                items = order.items.map { it.copy(id = null) },  // Set item IDs to null
+                cartItems = order.cartItems.map { it.copy(id = null) }  // Set cart item IDs and product IDs to null
+            )
+            println("Placing order: $orderWithNullIds")
 
             val response = httpClient.post {
                 headers.append(HttpHeaders.Authorization, "Bearer ${getJwtToken(context)}")
-
+                contentType(ContentType.Application.Json)
                 url {
                     protocol = URLProtocol.HTTP
                     host = "10.0.2.2" // Replace with your backend server's IP or domain
                     port = 8081
                     path("/api/orders")
                 }
-                setBody(order) // Send the order as the request body
+                setBody(orderWithNullIds) // Send the order as the request body
             }.body<Orders>()
 
             println("Server response: $response")
@@ -47,7 +55,7 @@ class OrderRepository(private val httpClient: HttpClient) {
     suspend fun getOrders(context: Context): Flow<NetWorkResult<List<Orders>>> {
         return toResultFlow {
             println("Fetching orders...")
-
+            val userId = PreferencesHelper.getUsername(context)
             val response = httpClient.get {
                 headers.append(HttpHeaders.Authorization, "Bearer ${getJwtToken(context)}")
 
@@ -55,7 +63,7 @@ class OrderRepository(private val httpClient: HttpClient) {
                     protocol = URLProtocol.HTTP
                     host = "10.0.2.2"
                     port = 8081
-                    path("orders")
+                    path("api/orders/user/$userId")
                 }
             }.body<List<Orders>>()
 

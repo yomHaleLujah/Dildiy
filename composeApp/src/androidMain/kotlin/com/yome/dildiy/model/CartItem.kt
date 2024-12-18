@@ -9,7 +9,7 @@ import java.io.Serial
 data class CartItem(
     val id: Long = 0,
 
-    val cart: Cart?,
+    val cart: Cart,
 
     val product: Product,
 

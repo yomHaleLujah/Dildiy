@@ -1,4 +1,4 @@
-//package com.yome.dildiy.shoppingCart
+//package com.yome.dildiy.ui.ecommerce.shoppingCart
 //
 //import androidx.lifecycle.ViewModel
 //import androidx.lifecycle.viewModelScope

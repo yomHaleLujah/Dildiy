@@ -248,14 +248,18 @@ fun PostTabView(
                     onTabSelected(index)
                 }
             ) {
-                Icon(
-                    imageVector = item.image,
-                    contentDescription = item.text,
-                    tint = if (selectedTabIndex == index) activeColor else inactiveColor,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .size(20.dp)
-                )
+                Column {
+                    Icon(
+                        imageVector = item.image,
+                        contentDescription = item.text,
+                        tint = if (selectedTabIndex == index) activeColor else inactiveColor,
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .size(20.dp)
+                    )
+                    Text(text = item.text)
+                }
+
             }
         }
     }

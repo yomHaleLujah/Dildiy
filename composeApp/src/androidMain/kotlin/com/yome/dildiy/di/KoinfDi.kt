@@ -1,6 +1,7 @@
 package com.yome.dildiy.di
 
-import androidx.room.Room
+import SoldRepository
+import com.yome.dildiy.networking.DeliveryRepository
 import com.yome.dildiy.networking.GetCartRepository
 import com.yome.dildiy.networking.LoginRepository
 import com.yome.dildiy.networking.OrderRepository
@@ -12,12 +13,15 @@ import com.yome.dildiy.networking.RegisterRepository
 import com.yome.dildiy.networking.SearchRepository
 import com.yome.dildiy.networking.ShoppingCartRepository
 import com.yome.dildiy.networking.UploadProductRepository
-import com.yome.dildiy.shoppingCart.ShoppingCartViewModel
+import com.yome.dildiy.ui.ecommerce.shoppingCart.ShoppingCartViewModel
 import com.yome.dildiy.ui.ecommerce.ProductScreen.ProductViewModel
 import com.yome.dildiy.ui.ecommerce.checkout.CheckoutViewModel
+import com.yome.dildiy.ui.ecommerce.checkout.DeliveryVm
+import com.yome.dildiy.ui.ecommerce.checkout.OrderVm
 import com.yome.dildiy.ui.ecommerce.checkout.PaymentViewModel
 import com.yome.dildiy.ui.ecommerce.createProduct.LoginVm
 import com.yome.dildiy.ui.ecommerce.createProduct.UploadProductVm
+import com.yome.dildiy.ui.ecommerce.orderScreen.SoldViewModel
 import com.yome.dildiy.ui.ecommerce.productdetail.ProductDetailVm
 import com.yome.dildiy.ui.ecommerce.profile.ProfileVm
 import com.yome.dildiy.ui.ecommerce.search.SearchViewModel
@@ -51,6 +55,9 @@ val provideRepositoryModule = module {
     single{ OrderRepository(get()) }
     single{ PaymentRepository(get()) }
     single{ ProfileRepository(get()) }
+    single{ DeliveryRepository(get()) }
+    single{ OrderRepository(get()) }
+    single{ SoldRepository(get()) }
 
 }
 
@@ -84,6 +91,17 @@ val provideViewModelModule = module {
     }
     single {
         ProfileVm(get())
+    }
+
+    single {
+        DeliveryVm(get())
+    }
+
+    single {
+        OrderVm(get())
+    }
+    single {
+        SoldViewModel(get())
     }
 
 }

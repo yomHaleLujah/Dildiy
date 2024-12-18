@@ -1,4 +1,4 @@
-package com.yome.dildiy.shoppingCart
+package com.yome.dildiy.ui.ecommerce.shoppingCart
 
 
 import android.content.Context

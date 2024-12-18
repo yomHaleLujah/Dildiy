@@ -781,6 +781,8 @@ drawable btn_radio_off_to_on_mtrl_animation
 drawable btn_radio_on_mtrl
 drawable btn_radio_on_to_off_mtrl_animation
 drawable center
+drawable check2
+drawable chek1
 drawable common_full_open_on_phone
 drawable common_google_signin_btn_icon_dark
 drawable common_google_signin_btn_icon_dark_focused
@@ -1304,6 +1306,10 @@ raw cart
 raw cart2
 raw chcekout2
 raw checkout
+raw login
+raw login2
+raw profile
+raw register
 raw search
 raw search1
 raw search2

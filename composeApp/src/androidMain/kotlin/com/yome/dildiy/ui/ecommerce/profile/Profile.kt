@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.LocalGroceryStore
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.ShoppingCartCheckout
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,6 +26,8 @@ import androidx.navigation.NavController
 import com.yome.dildiy.remote.dto.Product
 import com.yome.dildiy.remote.dto.User
 import com.yome.dildiy.ui.ecommerce.navigation.AppBottomNavigation
+import com.yome.dildiy.ui.ecommerce.orderScreen.OrderScreen
+import com.yome.dildiy.ui.ecommerce.orderScreen.SoldScreen
 import com.yome.dildiy.util.PreferencesHelper
 import org.koin.androidx.compose.getKoin
 
@@ -37,39 +40,13 @@ fun ProfileScreen2(
     val profileScreenState by viewModel.productViewState.collectAsState()
     val context = LocalContext.current
     val user = PreferencesHelper.getUsername2(context)
+    UserProfile(navController)
 
-    LaunchedEffect(true) {
 
-        user?.username?.let { viewModel.getAllProduct(it, context) }
-
-    }
-    Box {
-        when (profileScreenState) {
-            is ProfileVm.ProfileScreenState.Loading -> {
-                CircularProgressIndicator()
-            }
-
-            is ProfileVm.ProfileScreenState.Success -> {
-//            val user = (profileScreenState as ProfileVm.ProfileScreenState.Success).user
-                val products =
-                    (profileScreenState as ProfileVm.ProfileScreenState.Success).responseData
-                UserProfile(navController, products)
-            }
-
-            is ProfileVm.ProfileScreenState.Error -> {
-                // Show error message
-                androidx.compose.material3.Text(
-                    text = "Error:EcommerceViewModel.ProductState.Error",
-//                        modifier =
-//                        Modifier.align(Alignment.Center)
-                )
-            }
-        }
-    }
 }
 
 @Composable
-fun UserProfile(navController: NavController, products: List<Product>) {
+fun UserProfile(navController: NavController) {
     Column {
         // Header Section
 //        ProfileSection(user = user)
@@ -80,7 +57,7 @@ fun UserProfile(navController: NavController, products: List<Product>) {
         PostTabView(
             imageWithTexts = listOf(
                 ImageWithText(Icons.Default.GridView, "Posts"),
-                ImageWithText(Icons.Default.GridView, "Orders"),
+                ImageWithText(Icons.Default.ShoppingCartCheckout, "Orders"),
                 ImageWithText(Icons.Default.GridView, "Sold"),
                 ImageWithText(Icons.Default.GridView, "Returns"),
                 ImageWithText(Icons.Default.LocationOn, "Shipping Progress"),
@@ -89,8 +66,12 @@ fun UserProfile(navController: NavController, products: List<Product>) {
         ) { selectedTabIndex = it }
 
         when (selectedTabIndex) {
-            0 -> ProductList(productList = products, navController = navController)
-            // Handle other tabs as needed
+            0 -> ProductList(navController = navController)
+            1 -> OrderScreen(navController = navController)
+            2 -> SoldScreen(navController = navController)
+
+// Handle other tabs as needed
         }
     }
 }
+

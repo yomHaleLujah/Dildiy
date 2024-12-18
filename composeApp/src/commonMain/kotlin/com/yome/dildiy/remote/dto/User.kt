@@ -10,5 +10,8 @@ data class User(
     val name: String,
     val email: String,
     val password: String,
-    val isEnabled: Boolean
+    val isEnabled: Boolean,
+    val isMerchant: Boolean = false,
+    val tinNumber: String? = null,
+    val legalName: String? = null
 )

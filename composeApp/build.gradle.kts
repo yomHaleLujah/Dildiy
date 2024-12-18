@@ -114,7 +114,8 @@ kotlin {
             implementation ("org.osmdroid:osmdroid-android:6.1.14")
 //            implementation ("com.github.YohannesTz:ChapaKt:1.0.0")
             implementation ("androidx.webkit:webkit:1.8.0")
-
+            implementation ("androidx.room:room-runtime:2.5.0")
+//            kapt ("androidx.room:room-compiler:2.5.0")  // For Kotlin
         }
     }
 }
@@ -164,6 +165,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.core.i18n)
 //    implementation(libs.constraintlayout) // Koin Android support
 
 

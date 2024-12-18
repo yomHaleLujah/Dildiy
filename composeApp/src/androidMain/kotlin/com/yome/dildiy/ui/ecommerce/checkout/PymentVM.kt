@@ -7,18 +7,24 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yome.dildiy.Dao.PaymentResponse
+import com.yome.dildiy.model.OrderItem
 import com.yome.dildiy.remote.dto.Payload
 import com.yome.dildiy.model.Orders
 import com.yome.dildiy.networking.ApiStatus
 import com.yome.dildiy.networking.CartDTO
+import com.yome.dildiy.networking.CartItemDTO
 import com.yome.dildiy.networking.PaymentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.time.LocalDateTime
 
 class PaymentViewModel(private val paymentRepository: PaymentRepository) : ViewModel() {
+
 
     // Internal state that holds the PaymentState
     private val _paymentState = MutableStateFlow(PaymentState())
@@ -30,6 +36,14 @@ class PaymentViewModel(private val paymentRepository: PaymentRepository) : ViewM
     private val _hasNavigatedToWebView = MutableStateFlow(false)
     val hasNavigatedToWebView: StateFlow<Boolean> = _hasNavigatedToWebView.asStateFlow()
 
+    // Initialize finishIt as a MutableStateFlow of Orders with a default value or null
+    private val _finishIt = MutableStateFlow<Orders?>(null) // Using nullable type to handle uninitialized state
+    val finishIt: StateFlow<Orders?> get() = _finishIt // Expose as a read-only StateFlow
+
+    // Function to update the value of finishIt
+    fun setFinishIt(order: Orders) {
+        _finishIt.value = order
+    }
     // tx_ref generated once and exposed as LiveData
     private val _txRef = MutableLiveData<String>().apply {
         value = generateTxRef()
@@ -37,8 +51,11 @@ class PaymentViewModel(private val paymentRepository: PaymentRepository) : ViewM
     val txRef: LiveData<String> get() = _txRef
 
     // Function to generate a single tx_ref
-    public fun generateTxRef(): String {
+     fun generateTxRef(): String {
         return "chewatatest${(1000000000..9999999999).random()}"
+    }
+    fun generateTxRef2(){
+        _txRef.value = "chewatatest${(1000000000..9999999999).random()}"
     }
 
     // Optional function to get the tx_ref value directly
@@ -203,4 +220,61 @@ class PaymentViewModel(private val paymentRepository: PaymentRepository) : ViewM
 
 }
 
+
+fun prepareOrder(
+    userId: String,
+    fullName: String,
+    email: String,
+    phone: String,
+    address: String,
+    apartment: String?,
+    specialInstructions: String?,
+    location: String,
+    cartItems: List<CartItemDTO>
+): Orders {
+
+    Log.d("CartItems", "Cart items before preparing order: $cartItems")
+
+    // Calculate the total price of the order
+    val totalPrice = cartItems.sumOf { it.quantity * it.product.price }
+
+    // Create a list of OrderItem from the CartItemDTO
+    val orderItems = cartItems.map { cartItem ->
+        OrderItem(
+            productId = cartItem.product.id.toString(),
+            productName = cartItem.product.name,
+            quantity = cartItem.quantity,
+            price = cartItem.product.price
+        )
+    }
+
+    Log.d("OrderItems", "Order items created: $orderItems")
+
+    // Generate timestamps (createdAt and updatedAt)
+    val now = LocalDateTime.now().toString()
+
+    // Prepare the cartItems as a JSON string (or can use other formats)
+    val cartItemsJson = Json.encodeToString(cartItems)
+    val cartItems: List<CartItemDTO> = Json.decodeFromString(cartItemsJson)
+
+    // Create the Order object
+    val orders = Orders(
+        userId = userId,
+        fullName = fullName,
+        email = email,
+        phone = phone,
+        address = address,
+        apartment = apartment,
+        specialInstructions = specialInstructions,
+        location = location,
+        totalPrice = totalPrice,
+        createdAt = now,
+        updatedAt = now,
+        cartItems = cartItems,
+        items = orderItems
+    )
+
+    println("Prepare Order  "+ orders)
+return orders
+}
 

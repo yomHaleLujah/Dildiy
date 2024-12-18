@@ -3,6 +3,7 @@ package com.yome.dildiy.ui.ecommerce.search
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,7 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Category
@@ -31,6 +35,7 @@ import com.airbnb.lottie.LottieAnimationView
 import com.yome.dildiy.R
 import com.yome.dildiy.design.system.MyTextField
 import com.yome.dildiy.remote.dto.Product
+import com.yome.dildiy.ui.ecommerce.profile.ProductItem
 import com.yome.dildiy.ui.ecommerce.profile.TopBar
 import com.yome.dildiy.util.BaseUris
 import org.koin.mp.KoinPlatform.getKoin
@@ -44,131 +49,174 @@ fun SearchScreen(viewModel: SearchViewModel = getKoin().get(), navController: Na
     val searchByCategory = remember { mutableStateOf(TextFieldValue()) }
     val context = LocalContext.current
 
-    Column(){
-//        Spacer(modifier = Modifier.height(10.dp))
-//        TopBar("Search")
-//        Spacer(modifier = Modifier.height(16.dp))
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp),
+        contentPadding = PaddingValues(bottom = 50.dp) // Add padding for smoother scrolling
+    ) {
+        // Header Section
+        item {
+            com.yome.dildiy.util.LottieAnimationView(R.raw.search2)
 
-        com.yome.dildiy.util.LottieAnimationView(R.raw.search2)
-
-        Column( modifier = Modifier.padding(horizontal = 25.dp)
-        ) {
-            MyTextField(
-                textFieldState = searchByNameState.value,
-                hint = "Search by name",
-                leadingIcon = Icons.Outlined.Person,
-                keyboardType = KeyboardType.Text,
-                onValueChange = { searchByNameState.value = it
-                    viewModel._searchName.value = it.text },
-                modifier = Modifier.fillMaxWidth()
-            )
-            MyTextField(
-                textFieldState = searchByDescription.value,
-                hint = "Search by description",
-                leadingIcon = Icons.Outlined.Description,
-                keyboardType = KeyboardType.Text,
-                onValueChange = { searchByDescription.value = it
-                    viewModel._searchDescription.value = it.text},
-                modifier = Modifier.fillMaxWidth()
-            )
-            MyTextField(
-                textFieldState = searchByCategory.value,
-                hint = "Search by Category",
-                leadingIcon = Icons.Outlined.Category,
-                keyboardType = KeyboardType.Text,
-                onValueChange = { searchByCategory.value = it
-                    viewModel._searchCategory.value = it.text
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            androidx.compose.material.Button(
-                onClick = {
-
-                    viewModel.search(context) // Trigger the search when the button is clicked
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
-                shape = RoundedCornerShape(10.dp),
+            Column(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(0.5f)
-                    .height(50.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
-                androidx.compose.material.Text("Search", fontSize = 18.sp, color = Color.White)
+                MyTextField(
+                    textFieldState = searchByNameState.value,
+                    hint = "Search by name",
+                    leadingIcon = Icons.Outlined.Person,
+                    keyboardType = KeyboardType.Text,
+                    onValueChange = {
+                        searchByNameState.value = it
+                        viewModel._searchName.value = it.text
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                MyTextField(
+                    textFieldState = searchByDescription.value,
+                    hint = "Search by description",
+                    leadingIcon = Icons.Outlined.Description,
+                    keyboardType = KeyboardType.Text,
+                    onValueChange = {
+                        searchByDescription.value = it
+                        viewModel._searchDescription.value = it.text
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                MyTextField(
+                    textFieldState = searchByCategory.value,
+                    hint = "Search by Category",
+                    leadingIcon = Icons.Outlined.Category,
+                    keyboardType = KeyboardType.Text,
+                    onValueChange = {
+                        searchByCategory.value = it
+                        viewModel._searchCategory.value = it.text
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                androidx.compose.material.Button(
+                    onClick = {
+                        viewModel.search(context) // Trigger the search
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth(0.5f)
+                        .height(50.dp)
+                ) {
+                    androidx.compose.material.Text("Search", fontSize = 18.sp, color = Color.White)
+                }
+            }
+        }
+
+        // Content Section
+        when (val state = searchState) {
+            is SearchViewModel.SearchScreenState.Loading -> {
+                item {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                    )
+                }
             }
 
-
-            // Handle UI states (Loading, Error, Success)
-            when (val state = searchState) {
-                is SearchViewModel.SearchScreenState.Loading -> {
-                    CircularProgressIndicator() // Show loading indicator
+            is SearchViewModel.SearchScreenState.Error -> {
+                item {
+                    Text(
+                        text = "Error: ${state.errorMessage}",
+                        color = Color.Red,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                    )
                 }
+            }
 
-                is SearchViewModel.SearchScreenState.Error -> {
-                    Text("Error: ${state.errorMessage}") // Show error message
-                }
-
-                is SearchViewModel.SearchScreenState.Success -> {
-                    // Display the products
-                    // Display the products
-                    // Display the products
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),  // Adjust the number of columns as per your design
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(8.dp) // Add padding around the grid
+            is SearchViewModel.SearchScreenState.Success -> {
+                items(state.responseData.chunked(2)) { rowProducts ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        itemsIndexed(state.responseData) { index, product ->  // Use itemsIndexed to get both the index and the item
-                            ProductItem(product = product, navController = navController)      // Display the product item
+                        rowProducts.forEach { product ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f) // Equal weight to fill available space
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                ProductItem(
+                                    product = product,
+                                    navController = navController
+                                )
+                            }
+                        }
+
+                        // Add empty space if there's only one product in the row
+                        if (rowProducts.size < 2) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
-
-
-//                LazyColumn {
-//                    items(state.responseData) { product ->
-//                        Text(product.name) // Example of displaying product name
-//                    }
                 }
             }
-
-        }
         }
 
     }
+}
+
 
 
 
 @Composable
 fun ProductItem(product: Product, navController: NavController) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-        // Product Image (Main Image)
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .clickable { navController.navigate("productDetail/${product.id}") },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Product Image
+        Image(
+            painter = rememberImagePainter(BaseUris.IMAGE_BASE_URL + product.image),
+            contentDescription = product.name,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f) // Ensures square images
+        )
 
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp).clickable {
-                navController.navigate("productDetail/${product.id}")
-            }
-        ) {
-            Image(
-                painter = rememberImagePainter(BaseUris.IMAGE_BASE_URL +product.image),
-                contentDescription = product.name,
-            modifier = Modifier.size(200.dp)
-            )
-            Text(
-                text = product.name,
-                style = TextStyle(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
-                maxLines = 1
-            )
+        // Product Name
+        Text(
+            text = product.name,
+            style = TextStyle(
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Serif,
+                fontSize = 16.sp
+            ),
+            maxLines = 1
+        )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "\$${product.price}",
-                    style = TextStyle(fontWeight = FontWeight.Bold),
-                    color = Color.Green
-                )
-            }
-        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Product Price
+        Text(
+            text = "\$${product.price}",
+            style = TextStyle(
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            ),
+            color = Color.Green
+        )
     }
 }

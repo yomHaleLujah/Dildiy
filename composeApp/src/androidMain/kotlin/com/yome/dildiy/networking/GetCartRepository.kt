@@ -2,7 +2,10 @@ package com.yome.dildiy.networking
 
 import android.content.Context
 import android.util.Log
+import androidx.room.Entity
+import androidx.room.ForeignKey
 import com.yome.dildiy.model.Cart
+import com.yome.dildiy.model.Orders
 import com.yome.dildiy.util.PreferencesHelper
 import com.yome.dildiy.util.PreferencesHelper.getJwtToken
 import io.ktor.client.HttpClient
@@ -55,10 +58,10 @@ class GetCartRepository(private val httpClient: HttpClient) {
 
 @Serializable
 data class CartItemDTO(
-    val id: Long,
+    val id: Long? = null,
     val product: ProductDTO,
     var quantity: Int,
-    val username: String
+    val username: String,
 )
 
 @Serializable

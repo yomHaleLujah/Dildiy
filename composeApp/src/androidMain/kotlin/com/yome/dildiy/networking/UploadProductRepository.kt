@@ -23,10 +23,11 @@ class UploadProductRepository(
         return toResultFlow {
             val response = httpClient.post("http://10.0.2.2:8081/products") {
                 headers.append(HttpHeaders.Authorization, ""+getJwtToken(context))
+                val validImageUris = imageUris.filter { uri -> uri.toString() != "file://new_image_path" }
 
                 contentType(ContentType.MultiPart.FormData)
 
-                println("sending api request + "+ imageUris + product)
+                println("sending api request + "+ validImageUris + product)
                 setBody(MultiPartFormDataContent(formData {
                     // Append the product object as JSON string
                     append(
@@ -38,7 +39,7 @@ class UploadProductRepository(
                     )
 
                     // Append images using URIs
-                    imageUris.forEachIndexed { index, uri ->
+                    validImageUris.forEachIndexed { index, uri ->
                         val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
                         val fileBytes = inputStream?.readBytes()
                         inputStream?.close()
@@ -62,31 +63,3 @@ class UploadProductRepository(
     }
 }
 
-
-/*
-import com.yome.dildiy.remote.dto.Product
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.URLProtocol
-import io.ktor.http.contentType
-import io.ktor.http.path
-import kotlinx.coroutines.flow.Flow
-
-class UploadProductRepository(private val httpClient: HttpClient) {
-    suspend fun uploadProduct(product: Product): Flow<NetWorkResult<Product>> {
-        return toResultFlow {
-
-                 val response =  httpClient.post("http://10.0.2.2:8081/products") {
-                     contentType(ContentType.MultiPart.FormData)
-
-
-                        setBody(product)
-                    }.body<Product>()
-             NetWorkResult.Success(response)
-            }
-        }
-    }*/

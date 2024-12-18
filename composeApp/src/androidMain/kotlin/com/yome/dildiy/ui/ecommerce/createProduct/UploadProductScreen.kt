@@ -1,9 +1,9 @@
 package com.yome.dildiy.ui.ecommerce.createProduct
 
+
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,20 +40,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
+
 import com.yome.dildiy.R
 import com.yome.dildiy.design.system.MyTextField
 import com.yome.dildiy.remote.dto.Product
@@ -104,46 +98,48 @@ fun UploadScreen(
 
 
     Column {
-        Spacer(modifier = Modifier.height(10.dp))
-        TopBar("Upload")
 
-        Column( modifier = Modifier.padding(horizontal = 25.dp) )
+        Column(modifier = Modifier.padding(horizontal = 25.dp))
 
         {
-//        Image(
-//            painter = painterResource(R.drawable.register),
-//            contentDescription = null,
-//            contentScale = ContentScale.FillHeight,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .fillMaxWidth(0.25f)
-//        )
+
             com.yome.dildiy.util.LottieAnimationView(R.raw.settingwithcolor)
 
-        MyTextField(
-            textFieldState = nameState.value,
-            hint = "Product name",
-            leadingIcon = Icons.Outlined.Person,
-            keyboardType = KeyboardType.Text,
-            onValueChange = {
-                nameState.value = it
-                uploadProductVm.name.value = it.text
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-        MyTextField(
-            textFieldState = descriptionState.value,
-            hint = "Product description",
-            leadingIcon = Icons.Outlined.Description,
-            keyboardType = KeyboardType.Text,
-            onValueChange = {
-                descriptionState.value = it
-                uploadProductVm.description.value = it.text
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+            MyTextField(
+                textFieldState = nameState.value,
+                hint = "Product name",
+                leadingIcon = Icons.Outlined.Person,
+                keyboardType = KeyboardType.Text,
+                onValueChange = {
+                    nameState.value = it
+                    uploadProductVm.name.value = it.text
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            MyTextField(
+                textFieldState = descriptionState.value,
+                hint = "Product description",
+                leadingIcon = Icons.Outlined.Description,
+                keyboardType = KeyboardType.Text,
+                onValueChange = {
+                    if (it.text.length <= 350) { // Ensure input is limited to 50 characters
+                        descriptionState.value = it
+                        uploadProductVm.description.value = it.text
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Description cannot exceed 350 characters",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 MyTextField(
                     textFieldState = priceState.value,
                     hint = "Price",
@@ -153,8 +149,8 @@ fun UploadScreen(
                         priceState.value = it
                         uploadProductVm.price.value = it.text
                     },
-                   modifier = Modifier
-                            .weight(1f) // Take half the available width
+                    modifier = Modifier
+                        .weight(1f) // Take half the available width
                         .fillMaxWidth()
                 )
                 MyTextField(
@@ -173,35 +169,44 @@ fun UploadScreen(
             }
 
 
-        MyTextField(
-            textFieldState = categoryState.value,
-            hint = "Product Category like Electronics, Clothing...",
-            leadingIcon = Icons.Outlined.Category,
-            keyboardType = KeyboardType.Text,
-            onValueChange = {
-                categoryState.value = it
-                uploadProductVm.category.value = it.text
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+            MyTextField(
+                textFieldState = categoryState.value,
+                hint = "Product Category like Electronics, Clothing...",
+                leadingIcon = Icons.Outlined.Category,
+                keyboardType = KeyboardType.Text,
+                onValueChange = {
+                    if (it.text.length <= 50) {
+                        categoryState.value = it
+                        uploadProductVm.category.value = it.text
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Category cannot exceed 50 characters",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-            Text("Add Image")
+            Text("Add Image", fontSize = 34.sp)
             Text(
                 text = "For a better experience, please upload images with transparent PNG.",
                 style = MaterialTheme.typography.body1.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFBF360C),
                     fontSize = 14.sp
-                ))
+                )
+            )
 
-                    val imageUris = remember { mutableStateListOf<Uri>() }
+            val imageUris = remember { mutableStateListOf<Uri>() }
 
-        // Function to add an image URI (if there is room for more)
-        fun addImageUri(uri: Uri) {
-            if (imageUris.size < 4) {
-                imageUris.add(uri)
+            // Function to add an image URI (if there is room for more)
+            fun addImageUri(uri: Uri) {
+                if (imageUris.size < 4) {
+                    imageUris.add(uri)
+                }
             }
-        }
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
@@ -221,65 +226,64 @@ fun UploadScreen(
                             }
                         )
                     } else {
-                        // Display a button or area to add a new image
-                        AddImageButton(
-                            onAddImage = { uri ->
-                                addImageUri(uri)  // Add the new image URI to the list
-                            }
-                        )
+                        // Add a new URI if there's room
+                        if (imageUris.size < 4) {
+                            val newUri = Uri.parse("file://new_image_path")
+                            addImageUri(newUri)
+                        }
                     }
                 }
             }
 
-        Button(
-            onClick = {
-                uploadProductVm.uploadProduct(
-                    product,
-                    imageUris,
-                    context
-                ) // Trigger the search when the button is clicked
-            },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .height(50.dp)
-        ) {
-            androidx.compose.material.Text("Upload", fontSize = 18.sp, color = Color.White)
+
+            Button(
+                onClick = {
+                    uploadProductVm.uploadProduct(
+                        product,
+                        imageUris,
+                        context
+                    ) // Trigger the search when the button is clicked
+                },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                androidx.compose.material.Text("Upload", fontSize = 18.sp, color = Color.White)
+            }
+
+
         }
 
+        // Layout based on the current state
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            when (val state = uplaodProductState.toUiState()) {
+                is UploadProductVm.UploadProductScreenState.Loading -> {
+                    CircularProgressIndicator()  // Show loading spinner
+                }
 
-    }
+                is UploadProductVm.UploadProductScreenState.Success -> {
+                    navController.navigate("home")
+                    Toast.makeText(
+                        LocalContext.current,
+                        "Product created successfully",
+                        Toast.LENGTH_LONG
+                    )
+                }
 
-    // Layout based on the current state
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        when (val state = uplaodProductState.toUiState()) {
-            is UploadProductVm.UploadProductScreenState.Loading -> {
-                CircularProgressIndicator()  // Show loading spinner
-            }
-
-            is UploadProductVm.UploadProductScreenState.Success -> {
-                Toast.makeText(
-                    LocalContext.current,
-                    "Product created successfully",
-                    Toast.LENGTH_LONG
-                )
-            
-            }
-
-            is UploadProductVm.UploadProductScreenState.Error -> {
-                // Show error message
-//                TODO()
-//                androidx.compose.material.Text(
-//                    text = "Error: ${state.errorMessage}",
-//                    color = Color.Red,
-//                    style = MaterialTheme.typography.labelMedium
-//                )
+                is UploadProductVm.UploadProductScreenState.Error -> {
+                    Toast.makeText(
+                        LocalContext.current,
+                        "Upload product faild",
+                        Toast.LENGTH_LONG
+                    )
+                }
             }
         }
     }
-}}
+}
 
 @Composable
 fun AddImageButton(onAddImage: (Uri) -> Unit) {
@@ -308,27 +312,3 @@ fun AddImageButton(onAddImage: (Uri) -> Unit) {
 
     }
 }
-
-@Composable
-fun LottieAnimationView() {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.settingwithcolor))
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever // Keep playing the animation
-    )
-
-    // Center the animation in a constrained Box
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxWidth() // Limit to parent width
-            .padding(16.dp) // Add padding for spacing
-    ) {
-        LottieAnimation(
-            composition = composition,
-            progress = { progress },
-            modifier = Modifier.size(200.dp) // Control size explicitly
-        )
-    }
-}
-

@@ -2,8 +2,11 @@ package com.yome.dildiy.ui.ecommerce.checkout
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yome.dildiy.model.CartItem
 import com.yome.dildiy.model.OrderItem
 import com.yome.dildiy.model.Orders
 import com.yome.dildiy.networking.CartItemDTO
@@ -22,20 +25,6 @@ class CheckoutViewModel(
     private val orderRepository: OrderRepository // Replace with your actual repository interface
 ) : ViewModel() {
 
-    val _emailAddress = MutableStateFlow("")
-    var emailAddress = _emailAddress.asStateFlow()
-
-    val _phoneNumber = MutableStateFlow("")
-    var phoneNumber = _phoneNumber.asStateFlow()
-
-    private val _specialInstructions = MutableStateFlow("")
-    val specialInstructions: StateFlow<String> = _specialInstructions
-
-    private val _address = MutableStateFlow("")
-    val address: StateFlow<String> = _address
-
-    private val _apartment = MutableStateFlow("")
-    val apartment: StateFlow<String> = _apartment
 
 
     val _selectedLocation = MutableStateFlow<GeoPoint?>(null)
@@ -48,78 +37,82 @@ class CheckoutViewModel(
         MutableStateFlow<OrderSubmissionState>(OrderSubmissionState.Idle)
     var orderSubmissionState = _orderSubmissionState.asStateFlow()
 
-    private val _firstName = MutableStateFlow("")
-    val firstName: StateFlow<String> = _firstName
 
-    private val _lastName = MutableStateFlow("")
-    val lastName: StateFlow<String> = _lastName
+    private val _lastName = MutableStateFlow(TextFieldValue("")) // Store TextFieldValue
+    val lastName: StateFlow<TextFieldValue> get() = _lastName
 
+    private val _nameState = MutableStateFlow(TextFieldValue(""))
+    val nameState: StateFlow<TextFieldValue> = _nameState
 
-    fun setFistName(value: String) {
-        _firstName.value = value
+    private val _emailState = MutableStateFlow(TextFieldValue(""))
+    val emailState: StateFlow<TextFieldValue> = _emailState
+
+    private val _phoneNumberState = MutableStateFlow(TextFieldValue(""))
+    val phoneNumberState: StateFlow<TextFieldValue> = _phoneNumberState
+
+    private val _addressState = MutableStateFlow(TextFieldValue(""))
+    val addressState: StateFlow<TextFieldValue> = _addressState
+
+    private val _apartmentState = MutableStateFlow(TextFieldValue(""))
+    val apartmentState: StateFlow<TextFieldValue> = _apartmentState
+
+    private val _specialInstructionState = MutableStateFlow(TextFieldValue(""))
+    val specialInstructionState: StateFlow<TextFieldValue> = _specialInstructionState
+
+    // Update functions
+    fun setName(value: TextFieldValue) {
+        _nameState.value = value
     }
+
+    fun setEmail(value: TextFieldValue) {
+        _emailState.value = value
+    }
+
+    fun setPhoneNumber(value: TextFieldValue) {
+        _phoneNumberState.value = value
+    }
+
+    fun setAddress(value: TextFieldValue) {
+        _addressState.value = value
+    }
+
+    fun setApartment(value: TextFieldValue) {
+        _apartmentState.value = value
+    }
+
+    fun setSpecialInstruction(value: TextFieldValue) {
+        _specialInstructionState.value = value
+    }
+
     fun setLastName(value: String) {
-        _lastName.value = value
-    }
-    fun setEmailAddress(value: String) {
-        _emailAddress.value = value
-    }
-
-    fun setPhoneNumber(value: String) {
-        _phoneNumber.value = value
+        // Update only the text while preserving caret position
+        _lastName.value = _lastName.value.copy(
+            text = value,
+            selection = TextRange(value.length) // Move the caret to the end
+        )
     }
 
-    fun setSpecialInstructions(value: String) {
-        _specialInstructions.value = value
-    }
-
-    fun setAddress(value: String) {
-        _address.value = value
-    }
-
-    fun setApartment(value: String) {
-        _apartment.value = value
-    }
-
-    // Submit the order;
-    fun submitOrder(cartItems: List<CartItemDTO>, context: Context , latlang : String ) {
-           println("Order $context")
-
-        if (firstName.value.isBlank() || lastName.value.isBlank() || emailAddress.value.isBlank() || phoneNumber.value.isBlank() || address.value.isBlank()) {
-            _orderSubmissionState.update { OrderSubmissionState.Error("Please fill in all required fields.") }
-            return
+    fun validateForm(): ValidationResult {
+        if (nameState.value.text.isBlank() ||
+            emailState.value.text.isBlank() ||
+            phoneNumberState.value.text.isBlank() ||
+            addressState.value.text.isBlank() ||
+            apartmentState.value.text.isBlank() ||
+            specialInstructionState.value.text.isBlank()
+        ) {
+            return ValidationResult(false, "All fields are required.")
         }
 
-        viewModelScope.launch {
-            _orderSubmissionState.update { OrderSubmissionState.Loading }
-            try {
-
-                println("Order $context")
-
-                val order = prepareOrder(
-                    fullName = firstName.value + " " + lastName.value,
-                    email = emailAddress.value,
-                    phone = phoneNumber.value,
-                    address = address.value,
-                    apartment = apartment.value,
-                    specialInstructions = specialInstructions.value,
-                    location = latlang,
-                    cartItems = cartItems
-                )
-
-                println("Order $order")
-
-
-                val orderResponse = orderRepository.placeOrder(
-                    order, context
-                )
-                _orderSubmissionState.update { OrderSubmissionState.Success(orderResponse.toString()) }
-            } catch (e: Exception) {
-                _orderSubmissionState.update { OrderSubmissionState.Error("Failed to submit the order: ${e.message}") }
-            }
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailState.value.text).matches()) {
+            return ValidationResult(false, "Invalid email address.")
         }
+
+        return ValidationResult(true, "Form is valid.")
     }
+
 }
+data class ValidationResult(val isValid: Boolean, val message: String)
+
 
 // States for order submission
 sealed class OrderSubmissionState {
@@ -162,6 +155,7 @@ fun prepareOrder2(
 
     // Prepare the cartItems as a JSON string (or can use other formats)
     val cartItemsJson = Json.encodeToString(cartItems)
+    val cartItems: List<CartItemDTO> = Json.decodeFromString(cartItemsJson)
 
     // Create the Order object
     return Orders(
@@ -176,7 +170,7 @@ fun prepareOrder2(
         totalPrice = totalPrice,
         createdAt = now,
         updatedAt = now,
-        cartItems = cartItemsJson,
+        cartItems = cartItems,
         items = orderItems
     )
 }

@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.AssignmentInd
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
@@ -41,6 +45,7 @@ import com.yome.dildiy.R
 import com.yome.dildiy.design.system.MyTextField
 import com.yome.dildiy.remote.dto.User
 import com.yome.dildiy.networking.DildiyClient
+import com.yome.dildiy.ui.ecommerce.checkout.LottieAnimationView2
 import com.yome.dildiy.ui.login.saveUser
 import org.koin.mp.KoinPlatform.getKoin
 
@@ -60,6 +65,9 @@ fun RegisterScreen(navController: NavController, registerViewModel: RegisterVm =
     val passwordState = remember { mutableStateOf(TextFieldValue()) }
     val confirmPasswordState = remember { mutableStateOf(TextFieldValue()) }
     val userName = remember { mutableStateOf(TextFieldValue()) }
+    val cbeAccountNumber = remember { mutableStateOf(TextFieldValue()) }
+    val tinNumber = remember { mutableStateOf(TextFieldValue()) }
+    val legalBusinessName = remember { mutableStateOf(TextFieldValue()) }
 
     val registerState by registerViewModel.loginState.collectAsState()
 
@@ -84,23 +92,19 @@ fun RegisterScreen(navController: NavController, registerViewModel: RegisterVm =
         }
         else -> {}
     }
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxSize().verticalScroll(scrollState) // Make the column scrollable
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.SpaceAround
     ) {
         Column {
 
-            Image(
-                painter = painterResource(R.drawable.register),
-                contentDescription = null,
-                contentScale = ContentScale.FillHeight,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxWidth(0.25f)
-            )
+//
+            LottieAnimationView2(R.raw.register)
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
@@ -156,6 +160,30 @@ fun RegisterScreen(navController: NavController, registerViewModel: RegisterVm =
             modifier = Modifier.fillMaxWidth(),
             onValueChange = {confirmPasswordState.value = it}
         )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text("For merchants only", fontSize = 20.sp )
+        MyTextField(
+            textFieldState = tinNumber.value,
+            hint = "Tin Number",
+            leadingIcon = Icons.Outlined.AssignmentInd,
+            modifier = Modifier.fillMaxWidth(),
+            onValueChange = {tinNumber.value = it}
+        )
+        MyTextField(
+            textFieldState = legalBusinessName.value,
+            hint = "Legal Business name",
+            leadingIcon = Icons.Outlined.AccountCircle,
+            modifier = Modifier.fillMaxWidth(),
+            onValueChange = {legalBusinessName.value = it}
+        )
+        MyTextField(
+            textFieldState = cbeAccountNumber.value,
+            hint = "CBE account number",
+            leadingIcon = Icons.Outlined.AccountBalance,
+            modifier = Modifier.fillMaxWidth(),
+            onValueChange = {cbeAccountNumber.value = it}
+        )
+
 
         println(emailState.value.text)
         // Register Button
@@ -169,7 +197,9 @@ fun RegisterScreen(navController: NavController, registerViewModel: RegisterVm =
                     email = emailState.value.text,
                     name = nameState.value.text,
                     password = passwordState.value.text,
-                    username = userName.value.text, isEnabled = true
+                    username = userName.value.text, isEnabled = true,
+                    legalName = legalBusinessName.value.text,
+                    tinNumber = tinNumber.value.text,
                 )
 //                 Call the ViewModel function to register the user
                 registerViewModel.register(user)

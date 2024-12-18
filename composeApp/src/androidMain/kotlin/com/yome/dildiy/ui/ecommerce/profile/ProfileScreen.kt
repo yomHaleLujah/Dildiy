@@ -1,6 +1,7 @@
 package com.yome.dildiy.ui.ecommerce.profile
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,10 +46,20 @@ import androidx.navigation.NavController
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.content.ContextCompat.startActivity
 import coil.compose.rememberImagePainter
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.yome.dildiy.MainActivity
+import com.yome.dildiy.R
 import com.yome.dildiy.remote.dto.Product
 import com.yome.dildiy.remote.dto.User
+import com.yome.dildiy.ui.ecommerce.checkout.LottieAnimationView2
 import com.yome.dildiy.ui.ecommerce.navigation.AppBottomNavigation
+import com.yome.dildiy.ui.login.LottieAnimationView3
 import com.yome.dildiy.util.BaseUris
 import com.yome.dildiy.util.PreferencesHelper
 import com.yome.dildiy.util.PreferencesHelper.getJwtToken
@@ -70,7 +81,12 @@ fun ProfileScreen(navController: NavController, modifier: Modifier = Modifier, p
         val token = getJwtToken(context)
 
         if (token.isNullOrEmpty()) {
-            DummyProfile(navController)
+            val intent = Intent(context, MainActivity::class.java)
+
+            intent.flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(context, intent, null)
+
         } else {
 
                 UserProfile(navController, profileVm = profileVm)
@@ -114,9 +130,16 @@ fun UserProfile(navController: NavController, profileVm: ProfileVm) {
                     .clickable {
                         PreferencesHelper.clearJwtToken(context = context)
                         navController.navigate("register") {
-                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                            launchSingleTop = true
+                            popUpTo(0) // Clears the entire back stack
+                            launchSingleTop = true // Ensures a single instance of the destination
                         }
+
+                            val intent = Intent(context, MainActivity::class.java)
+
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(context, intent, null)
+
                     },
                 color = Color.Red,
                 fontSize = 16.sp,
@@ -130,21 +153,14 @@ fun UserProfile(navController: NavController, profileVm: ProfileVm) {
                 verticalArrangement = Arrangement.Top
             ) {
                 // Profile Picture
-                Image(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(177.dp)
-                        .padding(16.dp),
-                    contentScale = ContentScale.Crop
-                )
+                LottieAnimationView4(R.raw.profile)
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // Display username
                 Text(
                     text = "${user?.username}",
-                    fontSize = 30.sp
+                    fontSize = 25.sp
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -185,55 +201,52 @@ fun UserProfile(navController: NavController, profileVm: ProfileVm) {
 }
 
 
-@Composable
-fun DummyProfile(navController: NavController, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Large Profile Icon
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Profile Icon",
-            modifier = Modifier.size(100.dp),
-            tint = Color.Gray
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        // Compose Button
-        Button(
-            onClick = {
-            PreferencesHelper.clearJwtToken(context = context)
-                navController.navigate("login")
-                },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(0.5f)
-                .height(50.dp)
-        ) {
-            Text("Logout", fontSize = 18.sp, color = Color.White)
-        }
-    }
-}
 
 @Composable
-fun ProductList(modifier: Modifier = Modifier, productList: List<Product>, navController: NavController) {
-    println("Lazy vertical grid")
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3), // 3 items per row
-        contentPadding = PaddingValues(16.dp), // Optional padding
-        modifier = modifier.fillMaxSize()
-    ) {
-        items(productList.size) { product ->
-            // Create your product item UI here, including image and click action
-            ProductItem(product = product, navController = navController, productList )
+fun ProductList(modifier: Modifier = Modifier,navController: NavController,    viewModel: ProfileVm = org.koin.androidx.compose.getKoin()
+    .get() // Inject ViewModel using Koin
+) {
+    val context = LocalContext.current
+    val profileScreenState by viewModel.productViewState.collectAsState()
+    val user = PreferencesHelper.getUsername2(context)
+
+    LaunchedEffect(true) {
+
+        user?.username?.let { viewModel.getAllProduct(it, context) }
+
+    }
+    when (profileScreenState) {
+        is ProfileVm.ProfileScreenState.Loading -> {
+//                CircularProgressIndicator()
+        }
+
+        is ProfileVm.ProfileScreenState.Success -> {
+//            val user = (profileScreenState as ProfileVm.ProfileScreenState.Success).user
+            val products =
+                (profileScreenState as ProfileVm.ProfileScreenState.Success).responseData
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3), // 3 items per row
+                contentPadding = PaddingValues(16.dp), // Optional padding
+                modifier = modifier.fillMaxSize()
+            ) {
+                items(products.size) { product ->
+                    // Create your product item UI here, including image and click action
+                    ProductItem(product = product, navController = navController, products )
+                }
+            }
+        }
+
+        is ProfileVm.ProfileScreenState.Error -> {
+            // Show error message
+            androidx.compose.material3.Text(
+                text = "Error:EcommerceViewModel.ProductState.Error",
+//                        modifier =
+//                        Modifier.align(Alignment.Center)
+            )
         }
     }
+
 }
 
 @Composable
@@ -304,3 +317,27 @@ fun IconRowList(navController: NavController, onListClick: () -> Unit) {
     }
 }
 
+@Composable
+fun LottieAnimationView4(resources: Int) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resources))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever // Keep playing the animation
+    )
+
+    // Center the animation in a constrained Box
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth() // Limit to parent width
+    ) {
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = Modifier.size(100.dp) // Control size explicitly
+
+        )
+
+
+    }
+}

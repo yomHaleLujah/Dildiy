@@ -13,6 +13,6 @@ data class Product(
     val image: String,               // Single main image
     val imageList: List<String>,      // List of additional images
     val userId: String,
-    val vat : Double
+    val vat : Double?=0.0
     ) {
 }

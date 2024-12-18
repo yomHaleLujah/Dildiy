@@ -3,6 +3,7 @@ package com.yome.dildiy.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.yome.dildiy.model.Orders
 import com.yome.dildiy.remote.dto.User
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -15,6 +16,12 @@ object PreferencesHelper {
 
     private const val PREFS_NAME2 = "app_preferences"
     private const val JWT_TOKEN_KEY = "jwt_token"
+    private const val PREFS_NAME3 = "order_preferences"
+    private const val ORDER_KEY = "order"
+
+    private const val IS_MERCHANT = "isMerchant"
+    private const val IS_MERCHANT_KEY = "isMerchant"
+
 
     fun saveJwtToken(context: Context, token: String) {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME2, Context.MODE_PRIVATE)
@@ -35,6 +42,20 @@ object PreferencesHelper {
         editor.commit()
         val token = getJwtToken(context)
         Log.d("PreferencesHelper", "Token after clearing: $token")
+    }
+
+
+    fun saveMerchant(context: Context, isMerchant :Boolean){
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences(IS_MERCHANT, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString(IS_MERCHANT_KEY, isMerchant.toString())
+        editor.apply()
+    }
+
+    fun isMerchant(context: Context):Boolean{
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences(IS_MERCHANT, Context.MODE_PRIVATE)
+        if (sharedPreferences.getString(IS_MERCHANT_KEY, null) == "true") return true
+        return false
     }
 
     // Function to get SharedPreferences instance
@@ -100,4 +121,24 @@ object PreferencesHelper {
         }
     }
 
+
+    fun saveOrder(context: Context, order: Orders) {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME3, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val orderJson = Json.encodeToString(order)
+
+        editor.putString(ORDER_KEY, orderJson)
+        editor.apply()
+    }
+
+    fun getOrder(context: Context): Orders? {
+        /*val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME3, Context.MODE_PRIVATE)
+        val orderJson = sharedPreferences.getString(ORDER_KEY, null)
+        return orderJson?.let { Json.decodeFromString(it) }*/
+        return null
+    }
+    fun clearOrder(context: Context) {
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME3, Context.MODE_PRIVATE)
+        sharedPreferences.edit().remove(ORDER_KEY).apply()
+    }
 }

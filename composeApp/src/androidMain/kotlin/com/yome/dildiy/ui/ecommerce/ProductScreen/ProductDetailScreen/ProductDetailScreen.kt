@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil.compose.rememberImagePainter
 import com.yome.dildiy.remote.dto.Product
-//import com.yome.dildiy.shoppingCart.CartVM
+//import com.yome.dildiy.ui.ecommerce.shoppingCart.CartVM
 import com.yome.dildiy.util.PreferencesHelper
 import org.koin.mp.KoinPlatform.getKoin
 

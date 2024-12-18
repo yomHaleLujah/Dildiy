@@ -1,44 +1,62 @@
-
 package com.yome.dildiy.ui.login
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
-import android.widget.Toast
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.res.painterResource
-import androidx.navigation.NavController
-import com.yome.dildiy.R
-import com.yome.dildiy.design.system.MyTextField
-import com.yome.dildiy.remote.dto.User
-import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.material3.Button
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
+import androidx.navigation.NavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.yome.dildiy.MainActivity
+import com.yome.dildiy.R
+import com.yome.dildiy.design.system.MyTextField
+import com.yome.dildiy.remote.dto.User
 import com.yome.dildiy.ui.ecommerce.createProduct.LoginVm
 import com.yome.dildiy.util.PreferencesHelper
-import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.mp.KoinPlatform.getKoin
 
 @Composable
-fun LoginScreen(navController: NavController, loginViewModel: LoginVm = getKoin().get(), modifier: Modifier = Modifier) {
+fun LoginScreen(
+    navController: NavController,
+    loginViewModel: LoginVm = getKoin().get(),
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     val usernameState = remember { mutableStateOf(TextFieldValue()) }
     val passwordState = remember { mutableStateOf(TextFieldValue()) }
@@ -52,6 +70,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginVm = getKoin(
         is LoginVm.LoginScreenState.Loading -> {
             CircularProgressIndicator()
         }
+
         is LoginVm.LoginScreenState.Success -> {
             // Example of the response data (you'll get this from the server)
             val jwtToken = state.responseData?.jwtToken ?: null // Get JWT token from response
@@ -62,37 +81,23 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginVm = getKoin(
                 PreferencesHelper.saveJwtToken(context, jwtToken)
             }
 
+
+            val intent = Intent(context, MainActivity::class.java)
+
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(context, intent, null)
+
+
             // Save the user data (if available) in SharedPreferences
             user?.let { PreferencesHelper.saveUser(context, it) }
 
-            // Navigate to Profile screen
-//            if (PreferencesHelper.getJwtToken(context)!=null&&flag ==0){
-//                println("Token " + PreferencesHelper.getJwtToken(context))
-//                navController.navigate("Profile")
-//            }
-//            flag.value = 1
+            flag.value = 1
         }
+
         is LoginVm.LoginScreenState.Error -> {
-
-            // Show error if login fails
-//            Toast.makeText(context, "Error: ${state.errorMessage}", Toast.LENGTH_LONG).show()
         }
+
         else -> {}
-    }
-
-    LaunchedEffect(flag.value) {
-        if (flag.value == 1) {
-            delay(2000)  // Wait for 2 seconds
-            Toast.makeText(context, "Login Successful", Toast.LENGTH_LONG).show()
-            if (PreferencesHelper.getJwtToken(context) != null) {
-                navController.navigate("Profile") {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                    launchSingleTop = true // Avoid multiple instances
-                }
-            }
-        } else {
-            flag.value = 0  // Reset flag to 0 when login is not successful
-        }
     }
 
     Column(
@@ -102,14 +107,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginVm = getKoin(
         verticalArrangement = Arrangement.SpaceAround
     ) {
         Column {
-            Image(
-                painter = painterResource(R.drawable.login),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            )
-
+            LottieAnimationView3(R.raw.login2)
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
@@ -140,7 +138,13 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginVm = getKoin(
         Button(
             onClick = {
                 // Trigger login when button is clicked
-                val user = User(username = usernameState.value.text, password = passwordState.value.text, email = "", name = "", isEnabled = true)
+                val user = User(
+                    username = usernameState.value.text,
+                    password = passwordState.value.text,
+                    email = "",
+                    name = "",
+                    isEnabled = true
+                )
                 loginViewModel.login(user)
                 // Navigate to profile if login is successful
                 // Use LaunchedEffect to introduce a delay after the login attempt
@@ -174,21 +178,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginVm = getKoin(
         }
     }
 }
-@Composable
-fun checkLoginAndNavigate(context: Context, navController: NavController) {
-    LaunchedEffect(Unit) {
-        delay(2000)  // Wait for 2 seconds
 
-        if (PreferencesHelper.getJwtToken(context) != null) {
-            navController.navigate("Profile") {
-                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                launchSingleTop = true // Avoid multiple instances
-            }
-        } else {
-            Toast.makeText(context, "Login failed", Toast.LENGTH_LONG).show()
-        }
-    }
-}
 // Function to save User object to SharedPreferences
 fun saveUser(context: Context, user: String) {
     val sharedPreferences: SharedPreferences =
@@ -196,147 +186,34 @@ fun saveUser(context: Context, user: String) {
 
     val userJson = Json.encodeToString(user)  // Convert User object to JSON string
 
-    println("UserJson " +userJson)
+    println("UserJson " + userJson)
     // Save the JSON string in SharedPreferences
     sharedPreferences.edit().putString("user_preference", userJson).apply()
 }
 
-/*
-package com.yome.dildiy.ui.login
-
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material.Button
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.navigation.NavController
-import com.yome.dildiy.R
-import com.yome.dildiy.design.system.MyTextField
 
 @Composable
-fun LoginScreen(navController: NavController, modifier: Modifier = Modifier) {
+fun LottieAnimationView3(resources: Int) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resources))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever // Keep playing the animation
+    )
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.SpaceAround
+    // Center the animation in a constrained Box
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth() // Limit to parent width
     ) {
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = Modifier.size(300.dp) // Control size explicitly
 
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.SpaceAround
-        ) {
-            Column {
-                Image(
-                    painter = painterResource(R.drawable.login),
-                    contentDescription = null,
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxWidth(0.25f)
-                )
+        )
 
-                Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "Login",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 30.sp
-                )
-            }
-
-            MyTextField(
-                textFieldState = TextFieldValue(),
-                hint = "Email",
-                leadingIcon = Icons.Outlined.Email,
-                trailingIcon = Icons.Outlined.Check,
-                keyboardType = KeyboardType.Email,
-                modifier = Modifier.fillMaxWidth(),
-                onValueChange = {}
-            )
-
-            MyTextField(
-                textFieldState = TextFieldValue(),
-                hint = "Password",
-                leadingIcon = Icons.Outlined.Lock,
-                trailingText = "Forgot?",
-                isPassword = true,
-                modifier = Modifier.fillMaxWidth(),
-                onValueChange = {}
-            )
-
-            Button(
-                onClick = { },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Login",
-                    fontSize = 17.sp,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
-            Text(
-                text = "",
-                fontSize = 15.sp,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .alpha(0.5f)
-            )
-            Spacer(modifier = Modifier.height(1.dp))
-            Spacer(modifier = Modifier.height(1.dp))
-            Spacer(modifier = Modifier.height(1.dp))
-
-            Spacer(modifier = Modifier.height(1.dp))
-            Spacer(modifier = Modifier.height(1.dp))
-            Spacer(modifier = Modifier.height(1.dp))
-
-            Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(
-                    text = "Don't have an account? ",
-                    fontSize = 16.sp,
-                )
-                Text(
-                    text = "Register",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
-                        navController.navigate("register")
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(1.dp))
-        }
     }
-
-
-}*/
-
+}
 
